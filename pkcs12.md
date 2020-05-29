@@ -115,6 +115,12 @@ ContentInfo ::= SEQUENCE {
 
 ContentType ::= OBJECT IDENTIFIER
 
+DigestInfo ::= SEQUENCE {
+ digestAlgorithm DigestAlgorithmIdentifier,
+ digest Digest }
+
+Digest ::= OCTET STRING
+
 pkcs-7 OBJECT IDENTIFIER ::=
  { iso(1) member-body(2) US(840) rsadsi(113549)
      pkcs(1) 7 }
