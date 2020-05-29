@@ -95,6 +95,26 @@ B.2.  Encryption Schemes
 v1.5: https://tools.ietf.org/html/rfc2315
 
 ```asn1
+EncryptedData ::= SEQUENCE {
+ version Version,
+ encryptedContentInfo EncryptedContentInfo }
+
+EncryptedContentInfo ::= SEQUENCE {
+ contentType ContentType,
+ contentEncryptionAlgorithm
+   ContentEncryptionAlgorithmIdentifier,
+ encryptedContent
+   [0] IMPLICIT EncryptedContent OPTIONAL }
+
+EncryptedContent ::= OCTET STRING
+
+ContentInfo ::= SEQUENCE {
+ contentType ContentType,
+ content
+   [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL }
+
+ContentType ::= OBJECT IDENTIFIER
+
 pkcs-7 OBJECT IDENTIFIER ::=
  { iso(1) member-body(2) US(840) rsadsi(113549)
      pkcs(1) 7 }
@@ -146,6 +166,41 @@ v1.1: https://tools.ietf.org/html/rfc7292
 https://en.wikipedia.org/wiki/PKCS_12
 
 ```asn1
+PFX ::= SEQUENCE {
+   version     INTEGER {v3(3)}(v3,...),
+   authSafe    ContentInfo,
+   macData     MacData OPTIONAL
+}
+
+MacData ::= SEQUENCE {
+   mac         DigestInfo,
+   macSalt     OCTET STRING,
+   iterations  INTEGER DEFAULT 1
+   -- Note: The default is for historical reasons and its
+   --       use is deprecated.
+}
+
+ContentInfo, DigestInfo
+     FROM PKCS-7 {iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1)
+                  pkcs-7(7) modules(0) pkcs-7(1)}
+
+As mentioned, the contentType field of authSafe shall be of type data
+or signedData.  The content field of the authSafe shall, either
+directly (data case) or indirectly (signedData case), contain a BER-
+encoded value of type AuthenticatedSafe.
+
+AuthenticatedSafe ::= SEQUENCE OF ContentInfo
+   -- Data if unencrypted
+   -- EncryptedData if password-encrypted
+   -- EnvelopedData if public key-encrypted
+
+An AuthenticatedSafe contains a sequence of ContentInfo values.  The
+content field of these ContentInfo values contains either plaintext,
+encrypted, or enveloped data.  In the case of encrypted or enveloped
+data, the plaintext of the data holds the BER-encoding of an instance
+of SafeContents.  Section 5.1 of this document describes the
+construction of values of type AuthenticatedSafe in more detail.
+
 PrivateKeyInfo, EncryptedPrivateKeyInfo
   FROM PKCS-8 {iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1)
               pkcs-8(8) modules(1) pkcs-8(1)}
